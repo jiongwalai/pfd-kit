@@ -316,7 +316,8 @@ def _expl_ft_blk(
             "conf_filters_conv": steps.inputs.parameters["conf_filters_conv"],
         },
         artifacts={"systems": prep_run_fp.outputs.artifacts["labeled_data"]},
-        key="--".join(["%s" % steps.inputs.parameters["block_id"], "check-converge"]),
+        key="--".join(["%s" % steps.input=s.parameters["block_id"], "check-converge"]),
+        executor=collect_data_executor,
         **collect_data_step_config,
     )
     steps.add(evaluate)
