@@ -70,6 +70,35 @@ class MACECalculatorWrapper(CalculatorWrapper):
             raise ImportError("MACE not available. Install with: pip install mace") from e
 
 
+@CalculatorWrapper.register('abacus')
+class AbacusCalculatorWrapper(CalculatorWrapper):
+    """ABACUS DFT calculator via the ASE interface (fp labeling).
+
+    No model file is used; `model_args` carries the calculator setup:
+    `command` (e.g. an apptainer-exec line), `pseudo_dir`/`basis_dir`
+    (and optionally `offsite_basis_dir`) for the profile, `pp`/`basis`
+    element-to-filename dicts, plus any ABACUS INPUT keywords
+    (ecutwfc, scf_thr, kspacing, ...).
+    """
+    def create(self, model_path: Optional[Union[str, Path]] = None, **kwargs) -> Calculator:
+        """Create ABACUS calculator."""
+        try:
+            from ase.calculators.abacus import Abacus, AbacusProfile
+        except ImportError as e:
+            raise ImportError(
+                "ABACUS calculator not available: ase.calculators.abacus "
+                "requires the ase-abacus overlay (ase/io/abacus.py + "
+                "ase/calculators/abacus.py from gitlab.com/1041176461/ase-abacus)"
+            ) from e
+        profile_kwargs = {
+            kk: kwargs.pop(kk)
+            for kk in ("command", "pseudo_dir", "basis_dir", "offsite_basis_dir")
+            if kk in kwargs
+        }
+        profile = AbacusProfile(**profile_kwargs)
+        return Abacus(profile=profile, **kwargs)
+
+
 @CalculatorWrapper.register('emt')
 class EMTCalculatorWrapper(CalculatorWrapper):
     """EMT calculator wrapper for testing."""
