@@ -61,9 +61,14 @@ class DPTrain(Train):
             )
         dp_command = config.get("command", "dp").split()
         impl = config.get("impl", "tensorflow")
-        assert impl in ["tensorflow", "pytorch"]
-        if impl == "pytorch":
+        assert impl in ["tensorflow", "pytorch", "pytorch-expt"]
+        if impl == "pytorch" and "--pt-expt" not in dp_command:
             dp_command.append("--pt")
+        elif impl == "pytorch-expt":
+            # exportable backend, required by DPA4c models
+            if "--pt-expt" not in dp_command:
+                dp_command.append("--pt-expt")
+            impl = "pytorch"
         finetune_args = config.get("finetune_args", "")
         train_args = config.get("train_args", "")
         config = DPTrain.normalize_config(config)
@@ -327,7 +332,7 @@ class DPTrain(Train):
     @staticmethod
     def training_args():
         doc_command = "The command for DP, 'dp' for default"
-        doc_impl = "The implementation/backend of DP. It can be 'tensorflow' or 'pytorch'. 'tensorflow' for default."
+        doc_impl = "The implementation/backend of DP. It can be 'tensorflow', 'pytorch' or 'pytorch-expt' (exportable backend, required by DPA4c models, maps to `dp --pt-expt`). 'tensorflow' for default."
         doc_finetune_args = "Extra arguments for finetuning"
         doc_multitask = "Do multitask training"
         doc_head = "Head to use in the multitask training"
